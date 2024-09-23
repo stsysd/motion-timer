@@ -17,9 +17,7 @@ export const Clock = ({ duration, color, onChange }: ClockProps) => {
   const [status, setStatus] = useState<Status>("setup");
 
   const handleChange = useCallback(
-    (s: Status) => {
-      setStatus(s);
-    },
+    (s: Status) => setStatus(s),
     [setStatus],
   );
 
@@ -62,7 +60,7 @@ const ClockReady = ({ duration, color, onChange }: ClockReadyProps) => {
 
   useEffect(() => {
     setStatus((s) => {
-      if (s === "finished" && side == "HEAD") return "setup";
+      if (s === "finished") return "finished";
       if (s === "running" && side === "HEAD") return "paused";
       if (s === "paused" && side === "TAIL") return "running";
       if (s === "ready" && side === "TAIL") return "running";

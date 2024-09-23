@@ -1,5 +1,6 @@
+import { useDeviceSide } from "../hooks/useDeviceSide";
 import { Clock, type Status as ClockStatus } from "./Clock";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 function vibrate(...pattern: number[]) {
   if (navigator.vibrate) {
@@ -18,15 +19,10 @@ export const IntervalTimer = ({ workDuration, breakDuration }: IntervalTimerProp
   const color = working ? "#fa2e60" : "#1cbeb9";
   const refHandle = useRef<number | null>(null);
 
+  const side = useDeviceSide();
+
   const onChange = useCallback((status: ClockStatus) => {
     switch (status) {
-      case "setup":
-        if (refHandle.current) {
-          clearInterval(refHandle.current);
-          refHandle.current = null;
-        }
-        setWorking((w) => !w);
-        return;
       case "finished":
         vibrate(300, 300, 300, 300, 300);
         refHandle.current = window.setInterval(() => {
@@ -39,6 +35,14 @@ export const IntervalTimer = ({ workDuration, breakDuration }: IntervalTimerProp
         return;
     }
   }, [])
+
+  useEffect(() => {
+    if (side === "HEAD" && refHandle.current) {
+      clearInterval(refHandle.current);
+      refHandle.current = null;
+      setWorking((w) => !w);
+    }
+  }, [side]);
 
   return <>
     <Clock
