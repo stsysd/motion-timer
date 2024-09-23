@@ -13,7 +13,8 @@ export const useCountUp = (running: boolean = true): CountUp => {
 
   const loop = (ts: number = performance.now()) => {
     if (refLastTime.current != null) {
-      setElapsed((e) => e + ts - refLastTime.current!);
+      const delta = ts - refLastTime.current!;
+      setElapsed((e) => e + delta);
     }
     refLastTime.current = ts;
     refHandle.current = requestAnimationFrame(loop);
