@@ -14,7 +14,7 @@ function App() {
   }
 
   return <>
-    <IntervalTimer workDuration={5 * 1000} breakDuration={3 * 1000} />
+    <IntervalTimer workDuration={25 * 60 * 1000} breakDuration={5 * 60 * 1000} />
     <Overlay />
   </>;
 }
