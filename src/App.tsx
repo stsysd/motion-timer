@@ -21,7 +21,7 @@ function App() {
   }
 
   const breakParamStr = urlParams.get("break") ?? "5";
-  let breakDuration = parseInt(breakParamStr) * 60 * 1000;
+  const breakDuration = parseInt(breakParamStr) * 60 * 1000;
   if (isNaN(breakDuration)) {
     return <div>invalid query parameter "break"</div>;
   }
