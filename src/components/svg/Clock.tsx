@@ -63,8 +63,6 @@ export const Clock = ({ blind, duration, color, onChange }: ClockProps) => {
     });
   }, [blind, rate]);
 
-  useEffect(() => onChange?.(status), [status]);
-
   return (
     <Face value={gauge} faceColor={color} />
   );
