@@ -14,16 +14,23 @@ function App() {
 
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
+
   const workParamStr = urlParams.get("work") ?? "25";
-  const workDuration = parseInt(workParamStr) * 60 * 1000;
+  let workDuration = parseInt(workParamStr) * 60 * 1000;
   if (isNaN(workDuration)) {
     return <div>invalid query parameter "work"</div>;
   }
 
   const breakParamStr = urlParams.get("break") ?? "5";
-  const breakDuration = parseInt(breakParamStr) * 60 * 1000;
+  let breakDuration = parseInt(breakParamStr) * 60 * 1000;
   if (isNaN(breakDuration)) {
     return <div>invalid query parameter "break"</div>;
+  }
+
+  const debug = urlParams.get("debug") != null;
+  if (debug) {
+    workDuration /= 60;
+    breakDuration /= 60;
   }
 
   return <>
