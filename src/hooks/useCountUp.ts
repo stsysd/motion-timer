@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export type CountUp = {
-  elapsed: number;
-  reset(): void;
-};
-
-export const useCountUp = (running: boolean = true): CountUp => {
+export const useCountUp = (running: boolean = true): [number, () => void] => {
   const refLastTime = useRef<number | null>(null);
   const refHandle = useRef<number>();
   const [elapsed, setElapsed] = useState<number>(0);
@@ -32,5 +27,5 @@ export const useCountUp = (running: boolean = true): CountUp => {
     refLastTime.current = null;
   }, [running]);
 
-  return { elapsed, reset };
+  return [elapsed, reset];
 };

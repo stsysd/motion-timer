@@ -1,9 +1,9 @@
 import { Face } from "./Face";
 import { useCountUp } from "../../hooks/useCountUp";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useWakeLock } from "../../hooks/useWakeLock";
 
-export type Status = "setup" | "ready" | "running" | "paused" | "finished";
+export type Status = "ready" | "running" | "paused" | "finished";
 
 type ClockProps = {
   blind: boolean;
@@ -12,55 +12,45 @@ type ClockProps = {
   onChange?: (status: Status) => void;
 };
 
+const useGaugeCap = (duration: number) => {
+  const [done, setDone] = useState(false);
+  const [elapsed, resetCountUp] = useCountUp(!done);
+  const rate = elapsed / duration;
+
+  const reset = () => {
+    setDone(false);
+    resetCountUp();
+  };
+
+  useEffect(() => {
+    if (rate >= 1) {
+      setDone(true);
+    }
+  }, [rate]);
+
+  return [Math.min(rate, 1), reset] as const;
+};
+
 export const Clock = ({ blind, duration, color, onChange }: ClockProps) => {
   color = color ?? "#fa2e60";
-  const [status, setStatus] = useState<Status>("setup");
 
-  const handleChange = useCallback(
-    (s: Status) => setStatus(s),
-    [setStatus],
-  );
+  const [status, setStatus] = useState<Status>("ready");
+  const [elapsed, resetCountUp] = useCountUp(status === "running");
+  const [cap, resetCap] = useGaugeCap(800);
+  const rate = Math.min(elapsed / duration, 1);
+  const gauge = Math.min(cap, 1 - rate);
 
   useEffect(() => onChange?.(status), [status]);
-  useEffect(() => setStatus("setup"), [duration]);
-
-  if (status === "setup") {
-    return (
-      <>
-        <ClockNotReady
-          color={color}
-          onDone={() => handleChange("ready")}
-          duration={800}
-        />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <ClockReady
-        blind={blind}
-        duration={duration}
-        color={color}
-        onChange={handleChange}
-      />
-    </>
-  );
-};
-
-type ClockReadyProps = {
-  blind: boolean;
-  duration: number;
-  color: string;
-  onChange?: (status: Status) => void;
-};
-
-const ClockReady = ({ blind, duration, color, onChange }: ClockReadyProps) => {
-  const [status, setStatus] = useState<Status>("ready");
-  const countUp = useCountUp(status === "running");
-  const rate = Math.min(countUp.elapsed / duration, 1);
+  useEffect(() => setStatus("ready"), [duration]);
 
   useWakeLock(status === "running");
+
+  useEffect(() => {
+    if (status === "ready") {
+      resetCap();
+      resetCountUp();
+    }
+  }, [status]);
 
   useEffect(() => {
     setStatus((s) => {
@@ -76,30 +66,6 @@ const ClockReady = ({ blind, duration, color, onChange }: ClockReadyProps) => {
   useEffect(() => onChange?.(status), [status]);
 
   return (
-    <Face value={1 - rate} faceColor={color ?? "fa2e60"} />
-  );
-};
-
-type ClockNotReadyProps = {
-  color: string;
-  duration?: number;
-  onDone: () => void;
-};
-
-const ClockNotReady = ({ color, duration, onDone }: ClockNotReadyProps) => {
-  duration = duration ?? 1000;
-  const [done, setDone] = useState(false);
-  const countUp = useCountUp();
-  const rate = Math.min(countUp.elapsed / duration, 1);
-
-  useEffect(() => {
-    if (rate >= 1 && !done) {
-      setDone(true);
-      onDone();
-    }
-  }, [rate, done, onDone]);
-
-  return (
-    <Face value={rate} faceColor={color} />
+    <Face value={gauge} faceColor={color} />
   );
 };
