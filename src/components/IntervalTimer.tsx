@@ -47,12 +47,12 @@ export const IntervalTimer = ({ workDuration, breakDuration }: IntervalTimerProp
   }, [])
 
   useEffect(() => {
-    if (side === "HEAD" && refHandle.current) {
+    if (!blind && refHandle.current) {
       clearInterval(refHandle.current);
       refHandle.current = null;
       setWorking((w) => !w);
     }
-  }, [side]);
+  }, [blind]);
 
   return <>
     <svg className={className}>
