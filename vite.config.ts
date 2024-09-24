@@ -5,5 +5,4 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   base: "motion-timer",
-  build: { outDir: "docs" },
 });
