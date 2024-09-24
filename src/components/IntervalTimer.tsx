@@ -57,6 +57,7 @@ export const IntervalTimer = ({ workDuration, breakDuration }: IntervalTimerProp
   return <>
     <svg className={className}>
       <Clock
+        key={working ? "work" : "break"}
         blind={blind}
         duration={duration}
         color={color}
