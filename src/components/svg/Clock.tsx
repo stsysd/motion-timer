@@ -1,18 +1,18 @@
-import { Face } from "./svg/Face";
-import { useCountUp } from "../hooks/useCountUp";
+import { Face } from "./Face";
+import { useCountUp } from "../../hooks/useCountUp";
 import { useCallback, useEffect, useState } from "react";
-import { useWakeLock } from "../hooks/useWakeLock";
-import { useDeviceSide } from "../hooks/useDeviceSide";
+import { useWakeLock } from "../../hooks/useWakeLock";
 
 export type Status = "setup" | "ready" | "running" | "paused" | "finished";
 
 type ClockProps = {
+  blind: boolean;
   duration: number;
   color?: string;
   onChange?: (status: Status) => void;
 };
 
-export const Clock = ({ duration, color, onChange }: ClockProps) => {
+export const Clock = ({ blind, duration, color, onChange }: ClockProps) => {
   color = color ?? "#fa2e60";
   const [status, setStatus] = useState<Status>("setup");
 
@@ -38,20 +38,24 @@ export const Clock = ({ duration, color, onChange }: ClockProps) => {
 
   return (
     <>
-      <ClockReady duration={duration} color={color} onChange={handleChange} />
+      <ClockReady
+        blind={blind}
+        duration={duration}
+        color={color}
+        onChange={handleChange}
+      />
     </>
   );
 };
 
 type ClockReadyProps = {
+  blind: boolean;
   duration: number;
   color: string;
   onChange?: (status: Status) => void;
 };
 
-const ClockReady = ({ duration, color, onChange }: ClockReadyProps) => {
-  const side = useDeviceSide();
-
+const ClockReady = ({ blind, duration, color, onChange }: ClockReadyProps) => {
   const [status, setStatus] = useState<Status>("ready");
   const countUp = useCountUp(status === "running");
   const rate = Math.min(countUp.elapsed / duration, 1);
@@ -61,22 +65,18 @@ const ClockReady = ({ duration, color, onChange }: ClockReadyProps) => {
   useEffect(() => {
     setStatus((s) => {
       if (s === "finished") return "finished";
-      if (s === "running" && side === "HEAD") return "paused";
-      if (s === "paused" && side === "TAIL") return "running";
-      if (s === "ready" && side === "TAIL") return "running";
+      if (s === "running" && !blind) return "paused";
+      if (s === "paused" && blind) return "running";
+      if (s === "ready" && blind) return "running";
       if (rate >= 1) return "finished";
       return s;
     });
-  }, [side, rate]);
+  }, [blind, rate]);
 
   useEffect(() => onChange?.(status), [status]);
 
   return (
-    <>
-      <svg className="clock">
-        <Face value={1 - rate} faceColor={color ?? "fa2e60"} />
-      </svg>
-    </>
+    <Face value={1 - rate} faceColor={color ?? "fa2e60"} />
   );
 };
 
@@ -100,10 +100,6 @@ const ClockNotReady = ({ color, duration, onDone }: ClockNotReadyProps) => {
   }, [rate, done, onDone]);
 
   return (
-    <>
-      <svg className="clock">
-        <Face value={rate} faceColor={color} />
-      </svg>
-    </>
+    <Face value={rate} faceColor={color} />
   );
 };

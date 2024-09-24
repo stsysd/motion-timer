@@ -1,5 +1,5 @@
-import { useDeviceSide } from "../hooks/useDeviceSide";
-import { Clock, type Status as ClockStatus } from "./Clock";
+import { useDeviceOrientation } from "../hooks/useDeviceOrientation";
+import { Clock, type Status as ClockStatus } from "./svg/Clock";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 function vibrate(...pattern: number[]) {
@@ -13,14 +13,24 @@ type IntervalTimerProps = {
   breakDuration: number;
 };
 
+type DeviceSide = "HEAD" | "TAIL";
+
+const useDeviceSide = (threthold: number = 180): DeviceSide => {
+  const { beta } = useDeviceOrientation();
+  if (beta === null) return "HEAD";
+  return Math.abs(beta) < threthold / 2 ? "HEAD" : "TAIL";
+}
+
 export const IntervalTimer = ({ workDuration, breakDuration }: IntervalTimerProps) => {
   const [working, setWorking] = useState(true);
   const duration = working ? workDuration : breakDuration;
   const color = working ? "#fa2e60" : "#1cbeb9";
-  const refHandle = useRef<number | null>(null);
+  const className = ["full", working ? "working" : "breaking"].join(" ");
 
   const side = useDeviceSide();
+  const blind = side === "TAIL";
 
+  const refHandle = useRef<number | null>(null);
   const onChange = useCallback((status: ClockStatus) => {
     switch (status) {
       case "finished":
@@ -45,11 +55,15 @@ export const IntervalTimer = ({ workDuration, breakDuration }: IntervalTimerProp
   }, [side]);
 
   return <>
-    <Clock
-      duration={duration}
-      color={color}
-      onChange={onChange}
-    />
+    <svg className={className}>
+      <Clock
+        blind={blind}
+        duration={duration}
+        color={color}
+        onChange={onChange}
+      />
+    </svg>
+    {blind ? <div className="full overlay" /> : null}
   </>;
 };
 
