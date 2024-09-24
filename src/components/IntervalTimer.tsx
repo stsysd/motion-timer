@@ -37,7 +37,7 @@ export const IntervalTimer = ({ workDuration, breakDuration }: IntervalTimerProp
         vibrate(300, 300, 300, 300, 300);
         refHandle.current = window.setInterval(() => {
           vibrate(300, 300, 300, 300, 300);
-        }, 15 * 1000);
+        }, 3 * 1000);
         return;
       case "running":
       case "paused":
